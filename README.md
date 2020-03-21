@@ -17,5 +17,5 @@ A parser with an **interactive menu** that can **extract details from a FITS fil
 ## Limitations:
 
 * Currently unable to handle **HISTORY** keywords, and can perform **no** actions on them.
-* Unable to handle continued-string keywords (multi-line comments and so on).
+* Unable to handle continued-string keywords.
 * Unable to handle extensions, can only extract primary header.

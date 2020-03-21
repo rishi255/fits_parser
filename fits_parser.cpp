@@ -41,14 +41,6 @@ public:
         value_with_comment = this->cardtext.substr(9);
     }
 
-    // card(std::string __key, std::string __vc)
-    // {
-    //     cardtext.reserve(80);
-    //     cardtext = "" + __key + __vc;
-    //     key = __key;
-    //     value_with_comment = __vc;
-    // }
-
     std::string get_key()   // returns key from cardtext by trimming
     {
         return key;
@@ -57,6 +49,11 @@ public:
     std::string get_value_with_comment()
     {
         return value_with_comment;
+    }
+
+    std::string get_comment()   // exclusively for COMMENT keyword
+    {
+        return this->cardtext.substr(8);
     }
 };
 
@@ -83,7 +80,6 @@ public:
         getcommands(file);
     }
     void getcommands(std::fstream &);
-    // one func for writing into file (updation)
 };
 
 void fits_parser::populate_map()
@@ -122,7 +118,6 @@ void fits_parser::extract_cards(std::fstream &file)
             else
             {
                 cards.emplace_back(card(std::string(""), true));
-                // std::cout << "PLACED END\n";
                 s = "END";
             }
 
@@ -164,7 +159,12 @@ void fits_parser::getcommands (std::fstream &file)
             }
 
             else if (query == "COMMENT")
-                ; // TODO: display COMMENT
+            {
+                for(auto&& i : comments)
+                {
+                    std::cout << i.get_comment() << "\n";
+                }
+            }
 
             else if (query == "HISTORY")
                 ; // TODO: handle HISTORY
@@ -237,7 +237,6 @@ void fits_parser::update_file
             file.read(temp, 80);
         std::string s(temp);
         
-        // std::cout << "KEY ARG  = \"" << keyarg << "\"\n";
         while(!file.eof())
         {
             if(s.substr(0, keyarg.size()) == keyarg)

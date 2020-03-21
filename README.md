@@ -11,9 +11,10 @@ A parser with an **interactive menu** that can **extract details from a FITS fil
     * if **[VALUE]** is of invalid format/size, handles it accordingly.  
     (eg. if value is a character string, checks for single quotes at front and back, adds closing quote if not present.)  
 * **[KEYWORD]** - displays value of provided keyword.
+* **COMMENT** - displays all comments in the order they are found in the file.
 * **END** - end program.  
 
 ## Limitations:
 
-* Currently unable to handle **HISTORY** and **COMMENT** keywords, and can perform **no** actions on them.
+* Currently unable to handle **HISTORY** keywords, and can perform **no** actions on them.
 * Unable to handle continued-string keywords (multi-line comments and so on).

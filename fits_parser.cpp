@@ -53,6 +53,11 @@ public:
 
     std::string get_comment()   // exclusively for COMMENT keyword
     {
+        return this->cardtext.substr(10);
+    }
+
+    std::string get_history() // exclusively for HISTORY keyword
+    {
         return this->cardtext.substr(8);
     }
 };
@@ -64,6 +69,7 @@ private:
     
     std::vector<card> cards;
     std::vector<card> comments;
+    std::vector<card> history;
 
     umap cardmap;   // map <keyword, value_with_comment>
     void populate_map();
@@ -76,7 +82,6 @@ public:
         std::fstream file(fname, std::ios::in | std::ios::out | std::ios::binary);
         extract_cards(file);
         populate_map();
-        std::cout << "DONE EXTRACTING & POPULATING! \n\n";
         getcommands(file);
     }
     void getcommands(std::fstream &);
@@ -97,6 +102,7 @@ void fits_parser::extract_cards(std::fstream &file)
         file.seekp(0, std::ios::beg);
         cards.clear();
         comments.clear();
+        history.clear();
         char cardtext[81];
 
         file.read(cardtext, 80);
@@ -110,7 +116,7 @@ void fits_parser::extract_cards(std::fstream &file)
                     comments.emplace_back(card(std::string(cardtext)));
                 
                 else if (s.substr(0,7) == "HISTORY")
-                    ; // TODO something
+                    history.emplace_back(card(std::string(cardtext)));
 
                 else
                     cards.emplace_back(card(std::string(cardtext)));
@@ -127,6 +133,7 @@ void fits_parser::extract_cards(std::fstream &file)
 
         cards.shrink_to_fit();
         comments.shrink_to_fit();
+        history.shrink_to_fit();
     }
 
 void fits_parser::getcommands (std::fstream &file)
@@ -152,14 +159,24 @@ void fits_parser::getcommands (std::fstream &file)
             {
                 std::cin >> keyarg;
                 std::cin >> valarg;
+                
+                if(keyarg == "COMMENT")
+                {
+                    ; // TODO handle COMMENT updates
+                }
 
-                // since HISTORY and COMMENT not supported yet
-                if(keyarg != "HISTORY" && keyarg != "COMMENT")
+                else if(keyarg == "HISTORY")
+                {
+                    ; // TODO handle HISTORY update
+                }
+
+                else
                     update_file(file, keyarg, valarg);
             }
 
             else if (query == "COMMENT")
             {
+                // just display all comments in order
                 for(auto&& i : comments)
                 {
                     std::cout << i.get_comment() << "\n";
@@ -167,7 +184,13 @@ void fits_parser::getcommands (std::fstream &file)
             }
 
             else if (query == "HISTORY")
-                ; // TODO: handle HISTORY
+            {
+                // just display all history in order
+                for(auto&& i : history)
+                {
+                    std::cout << i.get_history() << "\n";
+                }
+            }
 
             else    
             {
@@ -185,6 +208,7 @@ void fits_parser::getcommands (std::fstream &file)
                     std::cerr << " NOT FOUND!\n";
             }
 
+            std::cout << "\n";
         }while(query != "END");
     }
 
@@ -224,7 +248,7 @@ void fits_parser::update_file
 
                 if(invalidFormat)
                     valarg.append("\'");
-                    // closing quote if not provided
+                // closing quote appended if not provided
             }
             else
             {

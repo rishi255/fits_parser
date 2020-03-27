@@ -1,4 +1,4 @@
-#include "headers/card.hpp"
+#include "headers/fits_parser.hpp"
 
 card::card() { cardtext.reserve(80); }
 

@@ -17,14 +17,14 @@ int main()
     filename = filename + ".fits";
 
     std::string fpath = GetCurrentWorkingDir();
-    std::cout << "CURR: " << fpath << "\n";
+    // std::cout << "CURR: " << fpath << "\n";
 
     fpath = fpath.substr(0, fpath.find_last_of("/\\"));
-    std::cout << "ONE BACK: " << fpath << "\n";
+    // std::cout << "ONE BACK: " << fpath << "\n";
 
     fpath.append("\\fits_files\\");
     fpath.append(filename);
-    std::cout << "PROPER PATH: " << fpath << "|\n";
+    // std::cout << "PROPER PATH: " << fpath << "|\n";
     fits_parser fitsparser (fpath);
     
     return 0;

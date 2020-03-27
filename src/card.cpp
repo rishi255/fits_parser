@@ -1,8 +1,8 @@
-#include "card.hpp"
+#include "headers/card.hpp"
 
 card::card() { cardtext.reserve(80); }
 
-card::card(std::string __cardtext, bool isEnd = false)
+card::card(std::string __cardtext, bool isEnd)  // isEnd = false by default
 {
     cardtext.reserve(80);
     if(!isEnd)

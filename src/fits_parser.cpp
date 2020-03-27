@@ -9,8 +9,7 @@
 #include <iomanip>
 #include <iterator>
 
-#include "card.hpp"
-#include "fits_parser.hpp"
+#include "headers/fits_parser.hpp"
 
 #define ull unsigned long long int 
 
@@ -44,7 +43,7 @@ void fits_parser::extract_cards(std::fstream &file)
         file.read(cardtext, 80);
         std::string s(cardtext);
         
-        while(!file.eof() && s.substr(0,3) != "END")
+        while(!file.eof()) //&& s.substr(0,3) != "END")
         {
             if(s.substr(0,3) != "END")
             {

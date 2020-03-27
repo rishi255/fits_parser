@@ -43,7 +43,7 @@ void fits_parser::extract_cards(std::fstream &file)
         file.read(cardtext, 80);
         std::string s(cardtext);
         
-        while(!file.eof()) //&& s.substr(0,3) != "END")
+        while(!file.eof() && s.substr(0,3) != "END")
         {
             if(s.substr(0,3) != "END")
             {
@@ -59,7 +59,7 @@ void fits_parser::extract_cards(std::fstream &file)
             else
             {
                 cards.emplace_back(card(std::string(""), true));
-                s = "END";
+                s = "END     ";
             }
 
             file.read(cardtext, 80);

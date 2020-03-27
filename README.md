@@ -19,14 +19,15 @@ Once CMake is installed:
    - `cd build`
    - `./FITS_Parser.exe` (for Windows) or `./FITS_Parser` (for Unix)
 
-## Current features:
+## Current features:  
+Can parse all HDUs (primary HDU and standard extensions)
 
-* **DISPLAY** - displays all keywords with associated values and / comments present in the file.  
+* **DISPLAY** - displays all keywords (HDU wise) with associated values and / comments present in the file.  
 * **UPDATE [KEYWORD] [VALUE]** - update existing value of provided keyword with provided value.  
     * if **[VALUE]** is of invalid format/size, handles it accordingly.  
     (eg. if value is a character string, checks for single quotes at front and back, adds closing quote if not present.)  
-* **[KEYWORD]** - displays value of provided keyword.
-* **COMMENT** - displays all comments in the order they are found in the file.
+* **[KEYWORD]** - displays value of provided keyword (HDU wise, shows all results if keyword present in more than one HDU)
+* **COMMENT** - displays all comments (HDU wise) in the order they are found in the file.
 * **END** - end program.  
 
 ## Limitations:  

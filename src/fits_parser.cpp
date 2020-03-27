@@ -2,7 +2,6 @@
 #include <map>
 #include <vector>
 #include <algorithm>
-#include <string>
 #include <fstream>
 
 #include <sstream>
@@ -10,82 +9,19 @@
 #include <iomanip>
 #include <iterator>
 
+#include "card.hpp"
+#include "fits_parser.hpp"
+
 #define ull unsigned long long int 
 
-typedef std::map <std::string, std::string> umap;
-
-class card
+fits_parser::fits_parser (std::string &fname)
 {
-    std::string cardtext;
-    std::string key, value_with_comment;
-public:
-    card()
-    {
-        cardtext.reserve(80);
-    }
-
-    card(std::string __cardtext, bool isEnd = false)
-    {
-        cardtext.reserve(80);
-        if(!isEnd)
-            this->cardtext = __cardtext;
-
-        else
-        {
-            std::string ct(80, ' ');
-            ct.replace(0, 3, "END");
-            this->cardtext = ct;
-        }
-
-        key = this->cardtext.substr(0,8);
-        value_with_comment = this->cardtext.substr(9);
-    }
-
-    std::string get_key()   // returns key from cardtext by trimming
-    {
-        return key;
-    }
-
-    std::string get_value_with_comment()
-    {
-        return value_with_comment;
-    }
-
-    std::string get_comment()   // exclusively for COMMENT keyword
-    {
-        return this->cardtext.substr(10);
-    }
-
-    std::string get_history() // exclusively for HISTORY keyword
-    {
-        return this->cardtext.substr(8);
-    }
-};
-
-class fits_parser   // class to parse primary HDU of a FITS file.
-{
-private:
-    std::string filename;
-    
-    std::vector<card> cards;
-    std::vector<card> comments;
-    std::vector<card> history;
-
-    umap cardmap;   // map <keyword, value_with_comment>
-    void populate_map();
-    void extract_cards(std::fstream &); 
-    void update_file(std::fstream &, std::string &, std::string &);
-public:
-    fits_parser (std::string &fname)
-    {
-        filename = fname;
-        std::fstream file(fname, std::ios::in | std::ios::out | std::ios::binary);
-        extract_cards(file);
-        populate_map();
-        getcommands(file);
-    }
-    void getcommands(std::fstream &);
-};
+    filename = fname;
+    std::fstream file(fname, std::ios::in | std::ios::out | std::ios::binary);
+    extract_cards(file);
+    populate_map();
+    getcommands(file);
+}
 
 void fits_parser::populate_map()
 {
@@ -284,15 +220,3 @@ void fits_parser::update_file
         extract_cards(file);
         populate_map();
     }
-
-int main()
-{
-    std::string filename;
-    std::cout << "Enter filename to read (without extension .fits): ";
-    std::cin >> filename;
-
-    filename = filename + ".fits";
-    fits_parser fitsparser (filename);
-    
-    return 0;
-}

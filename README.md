@@ -4,6 +4,21 @@ A parser with an **interactive menu** that can **extract details from a FITS fil
 * query keywords to get their values, and  
 * update values of keywords in file.
 
+## How to build and run:  
+
+This project uses [CMake](https://cmake.org/), so if you don't have it, you'll need to get it from [here](https://cmake.org/download/) before proceeding.  
+
+Once CMake is installed:
+1. Open a terminal (Git Bash for Windows, bash for linux)  
+2. Go to the directory where you want to download the repo  
+3. `git clone https://github.com/rishi255/fits_parser.git`
+4. Once done, follow these steps to build:  
+   * `cd fits_parser`  
+   * `cmake --build . --config Release`  
+5. To run the project:  
+   - `cd build`
+   - `./FITS_Parser.exe` (for Windows) or `./FITS_Parser` (for Unix)
+
 ## Current features:
 
 * **DISPLAY** - displays all keywords with associated values and / comments present in the file.  
@@ -14,8 +29,14 @@ A parser with an **interactive menu** that can **extract details from a FITS fil
 * **COMMENT** - displays all comments in the order they are found in the file.
 * **END** - end program.  
 
-## Limitations:
+## Limitations:  
 
-* Currently unable to handle **HISTORY** keywords, and can perform **no** actions on them.
 * Unable to handle continued-string keywords.
-* Unable to handle extensions, can only extract primary header.
+* ~~Currently unable to handle **HISTORY** keywords, and can perform **no** actions on them.~~
+* ~~Unable to handle extensions, can only extract primary header.~~
+
+## Coming up...
+
+* Command line functionality!  
+Will be able to handle all commands described above as **command line arguments**, where the first argument will have to be the file name.  
+eg. `./FITS_Parser  ../sample_file.fits  DISPLAY`

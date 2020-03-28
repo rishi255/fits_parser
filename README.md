@@ -7,10 +7,11 @@ A parser with an **interactive menu** that can **extract details from a FITS fil
 ## How to build and run:  
 
 This project uses [CMake](https://cmake.org/), so if you don't have it, you'll need to get it from [here](https://cmake.org/download/) before proceeding.  
+You can also install it through [Cygwin](https://www.cygwin.com/) (Windows), [MacPorts](https://www.macports.org/) (MacOS), [Homebrew](https://brew.sh/) (MacOS/Linux) or [MSYS2](https://www.msys2.org/) (Windows).
 
 Once CMake is installed:
-1. Open a terminal (Git Bash for Windows, bash for linux)  
-2. Go to the directory where you want to download the repo  
+1. Open a terminal.  
+2. `cd` to the directory where you want to download the repo  
 3. `git clone https://github.com/rishi255/fits_parser.git`
 4. Once done, follow these steps to build:  
    * `cd fits_parser`  

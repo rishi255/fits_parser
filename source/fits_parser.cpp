@@ -71,52 +71,67 @@ void fits_parser::extract_cards(std::fstream &file)
         file.read(cardtext, 80);
         s = std::string(cardtext);
 
-        // size_t x = 0;
-        bool extFound = false;
-        while(!file.eof() && s.substr(0,8) != "END     ")
+        size_t x = 1;
+        bool extFound = false, binTblExt = false, imgExt = false, ascTblExt = false, notStandard;
+        while(!file.eof())
         {
-            // while()
-            // {
-                // extFound = false;
-                if(s.substr(0,8)=="XTENSION")
-                {
-                    std::cout <<    "\n\n\n\n******************************EXTENSION   FOUND******************************\n\n\n";
-                    extFound = true;
-                }
+            extFound = false;
+            // std::cout << "outer loop again\n";
+            //while(!file.eof() && s.substr(0,8) != "END     ")
+            //{
+                // TODO: make sure this while loop starts working
+            if(s.substr(0,8)=="XTENSION")
+            {
+                std::cout <<    "\n\n\n\n******************************EXTENSION  FOUND******************************\n\n\n";
+                extFound = true;
+                
+                if(s.substr(11,8)=="IMAGE   ")
+                    imgExt = true;
+                else if (s.substr(11,5)=="BINTABLE")
+                    binTblExt = true;
+                else if (s.substr(11,5)=="TABLE   ")
+                    ascTblExt = true;
+                else
+                    notStandard = true;             
+            }
 
-                if(extFound)
+            while(extFound)
+            {
+                // std::cout << "EXT FIELD NUMBER " << x++ << "\n";
+                if(s.substr(0,3) != "END")
                 {
-                    // std::cout << "EXT FIELD NUMBER " << x++ << "\n";
-                    if(s.substr(0,3) != "END")
-                    {
-                        if(s.substr(0,7) == "COMMENT")
-                            temp_hdu.comments.emplace_back(card(std::string(cardtext)));
-                        
-                        else if (s.substr(0,7) == "HISTORY")
-                            temp_hdu.history.emplace_back(card(std::string(cardtext)));
-
-                        else
-                            temp_hdu.cards.emplace_back(card(std::string(cardtext)));
-                    }
+                    if(s.substr(0,7) == "COMMENT")
+                        temp_hdu.comments.emplace_back(card(std::string(cardtext)));
+                    
+                    else if (s.substr(0,7) == "HISTORY")
+                        temp_hdu.history.emplace_back(card(std::string(cardtext)));
+            
                     else
-                    {
-                        temp_hdu.cards.emplace_back(card(std::string(""), true));
-                        s = "END     ";
-                    }
+                        temp_hdu.cards.emplace_back(card(std::string(cardtext)));
+                }
+                else
+                {
+                    temp_hdu.cards.emplace_back(card(std::string(""), true));
+                    s = "END     ";
+                    extFound = false;
 
                     temp_hdu.cards.shrink_to_fit();
                     temp_hdu.comments.shrink_to_fit();
                     temp_hdu.history.shrink_to_fit();
-                }
-                
+                    // std::cout << "YAY NEW XTENSION!\n";
 
+                    HDUS.emplace_back(temp_hdu);
+                }
                 file.read(cardtext, 80);
                 s = std::string(cardtext);
-            // }
-        }
+            } // end inner while loop (single extension scan over)
+            
+            file.read(cardtext, 80);
+            s = std::string(cardtext);
 
-        HDUS.emplace_back(temp_hdu);
-        temp_hdu.clear();
+            temp_hdu.clear();
+        } // end outer while loop (all extensions scanned)
+
     }
 
 void fits_parser::getcommands (std::fstream &file)
@@ -137,7 +152,7 @@ void fits_parser::getcommands (std::fstream &file)
                 size_t c = 1;
                 for(auto&& h : HDUS)
                 {
-                    std::cout << "\n\nHEADER NUMBER: " << c++ << "\n\n";
+                    std::cout << "\n\n******************************HEADER NUMBER: " << c++ << "******************************\n\n";
                     for(auto i=h.cards.begin(); i!=h.cards.end(); i++)
                         std::cout << i->get_key() << "= " << i->get_value_with_comment() << std::endl;
                 }
@@ -168,7 +183,7 @@ void fits_parser::getcommands (std::fstream &file)
                 size_t c = 1;
                 for(auto&& h : HDUS)
                 {
-                    std::cout << "\n\nHEADER NUMBER: " << c++ << "\n\n";
+                    std::cout << "\n\n******************************HEADER NUMBER: " << c++ << "******************************\n\n";
                     for(auto&& i : h.comments)
                     {
                         std::cout << i.get_comment() << "\n";
@@ -182,7 +197,7 @@ void fits_parser::getcommands (std::fstream &file)
                 size_t c = 1;
                 for(auto&& h : HDUS)
                 {
-                    std::cout << "\n\nHEADER NUMBER: " << c++ << "\n\n";
+                    std::cout << "\n\n******************************HEADER NUMBER: " << c++ << "******************************\n\n";
                     for(auto&& i : h.history)
                     {
                         std::cout << i.get_history() << "\n";
@@ -203,7 +218,6 @@ void fits_parser::getcommands (std::fstream &file)
 
                     if(it != h.cardmap.end())
                     {
-
                         std::cout << "\n\nHEADER NUMBER: " << c << "\n\n";
                         std::cout << "->        ";
                         std::cout << it->second << std::endl;
@@ -214,7 +228,7 @@ void fits_parser::getcommands (std::fstream &file)
                     c++;
                 }
             }
-            std::cout << "\n";
+            std::cout << "\nEnter query: ";
 
         }while(query != "END");
     }

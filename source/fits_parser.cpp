@@ -146,10 +146,13 @@ void fits_parser::getcommands (std::fstream &file)
         else if (query == "DISPLAY")
         {
             std::cout << "NUMBER OF HDUS: " << HDUS.size() << "\n\n";
-            size_t c = 1;
+            size_t c = 0;
             for(auto&& h : HDUS)
             {
-                std::cout << "\n\n******************************HEADER NUMBER: " << c++ << "******************************\n\n";
+                std::cout << "\n\n******************************HDU NUMBER: " << c++;
+                if(c == 0) std::cout << "(PRIMARY HDU)";
+                else std::cout << "(EXTENSION)";
+                std::cout << "******************************\n\n";
                 for(auto i=h.cards.begin(); i!=h.cards.end(); i++)
                     std::cout << i->get_key() << "= " << i->get_value_with_comment() << std::endl;
             }
@@ -178,35 +181,40 @@ void fits_parser::getcommands (std::fstream &file)
         else if (query == "COMMENT")
         {
             // just display all comments in order
-            size_t c = 1;
+            size_t c = 0;
             for(auto&& h : HDUS)
             {
-                std::cout << "\n\n******************************HEADER NUMBER: " << c++ << "******************************\n\n";
+                
+                std::cout << "\n\n******************************HDU NUMBER: " << c++;
+                if(c == 0) std::cout << "(PRIMARY HDU)";
+                else std::cout << "(EXTENSION)";
+                std::cout << "******************************\n\n";
+                
                 for(auto&& i : h.comments)
-                {
                     std::cout << i.get_comment() << "\n";
-                }
             }
         }
 
         else if (query == "HISTORY")
         {
             // just display all history in order
-            size_t c = 1;
+            size_t c = 0;
             for(auto&& h : HDUS)
             {
-                std::cout << "\n\n******************************HEADER NUMBER: " << c++ << "******************************\n\n";
+                std::cout << "\n\n******************************HDU NUMBER: " << c++;
+                if(c == 0) std::cout << "(PRIMARY HDU)";
+                else std::cout << "(EXTENSION)";
+                std::cout << "******************************\n\n";
+                
                 for(auto&& i : h.history)
-                {
                     std::cout << i.get_history() << "\n";
-                }
             }
         }
 
         else    
         {
             // just a keyword whose value to display (from all HDUs)
-            size_t c = 1;
+            size_t c = 0;
             for(auto&& h : HDUS)
             {
                 if(query.size() < 8)
@@ -216,7 +224,11 @@ void fits_parser::getcommands (std::fstream &file)
 
                 if(it != h.cardmap.end())
                 {
-                    std::cout << "\n\nHEADER NUMBER: " << c << "\n\n";
+                    std::cout << "\n\nHDU NUMBER: " << c;
+                    if(c == 0) std::cout << "(PRIMARY HDU)";
+                    else std::cout << "(EXTENSION)";
+                    std::cout << "\n\n";
+                
                     std::cout << "->        ";
                     std::cout << it->second << std::endl;
                 }

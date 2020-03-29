@@ -19,6 +19,7 @@ Once CMake is installed:
 5. To run the project:  
    - `cd build`
    - `./FITS_Parser.exe` (for Windows) or `./FITS_Parser` (for Unix)
+6. **Important**: The FITS files that you want to parse have to be stored in the /fits_files subdirectory of the root. This is the directory the program searches for the FITS files in.  
 
 ## Current features:  
 Can parse all HDUs (primary HDU and standard extensions)

@@ -48,7 +48,7 @@ private:
 
     void populate_map();
     void extract_cards(std::fstream &); 
-    void update_file(std::fstream &, std::string &, std::string &);
+    bool update_file(std::fstream &, size_t &, std::string &, std::string &);
 
 public:
     fits_parser(std::string &fname);

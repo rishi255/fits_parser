@@ -30,19 +30,70 @@ void fits_parser::populate_map()
 }
 
 void fits_parser::extract_cards(std::fstream &file)
-    {
-        file.clear();
-        file.seekp(0, std::ios::beg);
-        HDUS.clear();
+{
+    file.clear();
+    file.seekp(0, std::ios::beg);
+    HDUS.clear();
+
+    char cardtext[81];
+
+    file.read(cardtext, 80);
+    std::string s(cardtext);
     
-        char cardtext[81];
+    hdu temp_hdu;
+    while(!file.eof() && s.substr(0,8) != "END     ")
+    {
+        if(s.substr(0,3) != "END")
+        {
+            if(s.substr(0,7) == "COMMENT")
+                temp_hdu.comments.emplace_back(card(std::string(cardtext)));
+            
+            else if (s.substr(0,7) == "HISTORY")
+                temp_hdu.history.emplace_back(card(std::string(cardtext)));
+
+            else
+                temp_hdu.cards.emplace_back(card(std::string(cardtext)));
+        }
+        else
+        {
+            temp_hdu.cards.emplace_back(card(std::string(""), true));
+            s = "END     ";
+        }
 
         file.read(cardtext, 80);
-        std::string s(cardtext);
-        
-        hdu temp_hdu;
-        while(!file.eof() && s.substr(0,8) != "END     ")
+        s = std::string(cardtext);
+    }
+    // end of primary HDU 
+
+    HDUS.emplace_back(temp_hdu);
+    temp_hdu.clear();
+
+    file.read(cardtext, 80);
+    s = std::string(cardtext);
+
+    size_t x = 1;
+    bool extFound = false, binTblExt = false, imgExt = false, ascTblExt = false, notStandard;
+    while(!file.eof())
+    {
+        extFound = false;
+        if(s.substr(0,8)=="XTENSION")
         {
+            std::cout <<    "\n\n\n\n******************************EXTENSION  FOUND******************************\n\n\n";
+            extFound = true;
+            
+            if(s.substr(11,8)=="IMAGE   ")
+                imgExt = true;
+            else if (s.substr(11,5)=="BINTABLE")
+                binTblExt = true;
+            else if (s.substr(11,5)=="TABLE   ")
+                ascTblExt = true;
+            else
+                notStandard = true;             
+        }
+
+        while(extFound)
+        {
+            // std::cout << "EXT FIELD NUMBER " << x++ << "\n";
             if(s.substr(0,3) != "END")
             {
                 if(s.substr(0,7) == "COMMENT")
@@ -50,7 +101,7 @@ void fits_parser::extract_cards(std::fstream &file)
                 
                 else if (s.substr(0,7) == "HISTORY")
                     temp_hdu.history.emplace_back(card(std::string(cardtext)));
-
+        
                 else
                     temp_hdu.cards.emplace_back(card(std::string(cardtext)));
             }
@@ -58,250 +109,274 @@ void fits_parser::extract_cards(std::fstream &file)
             {
                 temp_hdu.cards.emplace_back(card(std::string(""), true));
                 s = "END     ";
+                extFound = false;
+
+                temp_hdu.cards.shrink_to_fit();
+                temp_hdu.comments.shrink_to_fit();
+                temp_hdu.history.shrink_to_fit();
+                // std::cout << "YAY NEW XTENSION!\n";
+
+                HDUS.emplace_back(temp_hdu);
             }
-    
             file.read(cardtext, 80);
             s = std::string(cardtext);
-        }
-        // end of primary HDU 
-
-        HDUS.emplace_back(temp_hdu);
-        temp_hdu.clear();
-
+        } // end inner while loop (single extension scan over)
+        
         file.read(cardtext, 80);
         s = std::string(cardtext);
 
-        size_t x = 1;
-        bool extFound = false, binTblExt = false, imgExt = false, ascTblExt = false, notStandard;
-        while(!file.eof())
-        {
-            extFound = false;
-            // std::cout << "outer loop again\n";
-            //while(!file.eof() && s.substr(0,8) != "END     ")
-            //{
-                // TODO: make sure this while loop starts working
-            if(s.substr(0,8)=="XTENSION")
-            {
-                std::cout <<    "\n\n\n\n******************************EXTENSION  FOUND******************************\n\n\n";
-                extFound = true;
-                
-                if(s.substr(11,8)=="IMAGE   ")
-                    imgExt = true;
-                else if (s.substr(11,5)=="BINTABLE")
-                    binTblExt = true;
-                else if (s.substr(11,5)=="TABLE   ")
-                    ascTblExt = true;
-                else
-                    notStandard = true;             
-            }
+        temp_hdu.clear();
+    } // end outer while loop (all extensions scanned)
 
-            while(extFound)
-            {
-                // std::cout << "EXT FIELD NUMBER " << x++ << "\n";
-                if(s.substr(0,3) != "END")
-                {
-                    if(s.substr(0,7) == "COMMENT")
-                        temp_hdu.comments.emplace_back(card(std::string(cardtext)));
-                    
-                    else if (s.substr(0,7) == "HISTORY")
-                        temp_hdu.history.emplace_back(card(std::string(cardtext)));
-            
-                    else
-                        temp_hdu.cards.emplace_back(card(std::string(cardtext)));
-                }
-                else
-                {
-                    temp_hdu.cards.emplace_back(card(std::string(""), true));
-                    s = "END     ";
-                    extFound = false;
-
-                    temp_hdu.cards.shrink_to_fit();
-                    temp_hdu.comments.shrink_to_fit();
-                    temp_hdu.history.shrink_to_fit();
-                    // std::cout << "YAY NEW XTENSION!\n";
-
-                    HDUS.emplace_back(temp_hdu);
-                }
-                file.read(cardtext, 80);
-                s = std::string(cardtext);
-            } // end inner while loop (single extension scan over)
-            
-            file.read(cardtext, 80);
-            s = std::string(cardtext);
-
-            temp_hdu.clear();
-        } // end outer while loop (all extensions scanned)
-
-    }
+}
 
 void fits_parser::getcommands (std::fstream &file)
+{
+    std::cout << "\nEnter keyword (in caps) to query, \"END\" to exit: \n";
+    std::string query, keyarg, valarg;
+    size_t hdu_no;
+    
+    do
     {
-        std::cout << "\nEnter keyword (in caps) to query, \"END\" to exit: \n";
-        std::string query, keyarg, valarg;
+        std::cin >> query;
         
-        do
+        if (query == "END")
+            break;
+
+        else if (query == "DISPLAY")
         {
-            std::cin >> query;
+            std::cout << "NUMBER OF HDUS: " << HDUS.size() << "\n\n";
+            size_t c = 1;
+            for(auto&& h : HDUS)
+            {
+                std::cout << "\n\n******************************HEADER NUMBER: " << c++ << "******************************\n\n";
+                for(auto i=h.cards.begin(); i!=h.cards.end(); i++)
+                    std::cout << i->get_key() << "= " << i->get_value_with_comment() << std::endl;
+            }
+        }
+
+        else if (query == "UPDATE")
+        {
+            std::cin >> hdu_no;
+            std::cin >> keyarg;
+            std::cin >> valarg;
             
-            if (query == "END")
-                break;
-
-            else if (query == "DISPLAY")
+            if(keyarg == "COMMENT")
             {
-                std::cout << "NUMBER OF HDUS: " << HDUS.size() << "\n\n";
-                size_t c = 1;
-                for(auto&& h : HDUS)
-                {
-                    std::cout << "\n\n******************************HEADER NUMBER: " << c++ << "******************************\n\n";
-                    for(auto i=h.cards.begin(); i!=h.cards.end(); i++)
-                        std::cout << i->get_key() << "= " << i->get_value_with_comment() << std::endl;
-                }
+                ; // TODO handle COMMENT updates
             }
 
-            else if (query == "UPDATE")
+            else if(keyarg == "HISTORY")
             {
-                std::cin >> keyarg;
-                std::cin >> valarg;
-                
-                if(keyarg == "COMMENT")
-                {
-                    ; // TODO handle COMMENT updates
-                }
+                ; // TODO handle HISTORY update
+            }
 
-                else if(keyarg == "HISTORY")
-                {
-                    ; // TODO handle HISTORY update
-                }
+            else
+                update_file(file, hdu_no, keyarg, valarg);
+        }
 
+        else if (query == "COMMENT")
+        {
+            // just display all comments in order
+            size_t c = 1;
+            for(auto&& h : HDUS)
+            {
+                std::cout << "\n\n******************************HEADER NUMBER: " << c++ << "******************************\n\n";
+                for(auto&& i : h.comments)
+                {
+                    std::cout << i.get_comment() << "\n";
+                }
+            }
+        }
+
+        else if (query == "HISTORY")
+        {
+            // just display all history in order
+            size_t c = 1;
+            for(auto&& h : HDUS)
+            {
+                std::cout << "\n\n******************************HEADER NUMBER: " << c++ << "******************************\n\n";
+                for(auto&& i : h.history)
+                {
+                    std::cout << i.get_history() << "\n";
+                }
+            }
+        }
+
+        else    
+        {
+            // just a keyword whose value to display (from all HDUs)
+            size_t c = 1;
+            for(auto&& h : HDUS)
+            {
+                if(query.size() < 8)
+                    query.append(8-query.size(), ' ');
+
+                umap::const_iterator it = h.cardmap.find(query);
+
+                if(it != h.cardmap.end())
+                {
+                    std::cout << "\n\nHEADER NUMBER: " << c << "\n\n";
+                    std::cout << "->        ";
+                    std::cout << it->second << std::endl;
+                }
                 else
-                    update_file(file, keyarg, valarg);
+                    std::cerr << " NOT FOUND!\n";
+                
+                c++;
             }
+        }
+        std::cout << "\nEnter query: ";
 
-            else if (query == "COMMENT")
-            {
-                // just display all comments in order
-                size_t c = 1;
-                for(auto&& h : HDUS)
-                {
-                    std::cout << "\n\n******************************HEADER NUMBER: " << c++ << "******************************\n\n";
-                    for(auto&& i : h.comments)
-                    {
-                        std::cout << i.get_comment() << "\n";
-                    }
-                }
-            }
+    }while(query != "END");
+}
 
-            else if (query == "HISTORY")
-            {
-                // just display all history in order
-                size_t c = 1;
-                for(auto&& h : HDUS)
-                {
-                    std::cout << "\n\n******************************HEADER NUMBER: " << c++ << "******************************\n\n";
-                    for(auto&& i : h.history)
-                    {
-                        std::cout << i.get_history() << "\n";
-                    }
-                }
-            }
+bool fits_parser::update_file
+(std::fstream &file, size_t &hdu_no, std::string &keyarg, std::string &valarg)
+{
+    bool retval = false;
+    file.clear();
+    file.seekp(0, std::ios::beg);
 
-            else    
-            {
-                // just a keyword whose value to display (from all HDUs)
-                size_t c = 1;
-                for(auto&& h : HDUS)
-                {
-                    if(query.size() < 8)
-                        query.append(8-query.size(), ' ');
+    bool found = false, charStr = false, invalidFormat = false;;
 
-                    umap::const_iterator it = h.cardmap.find(query);
-
-                    if(it != h.cardmap.end())
-                    {
-                        std::cout << "\n\nHEADER NUMBER: " << c << "\n\n";
-                        std::cout << "->        ";
-                        std::cout << it->second << std::endl;
-                    }
-                    else
-                        std::cerr << " NOT FOUND!\n";
-                    
-                    c++;
-                }
-            }
-            std::cout << "\nEnter query: ";
-
-        }while(query != "END");
+    if(hdu_no > HDUS.size())
+    {
+        std::cerr << "INVALID HDU NUMBER PASSED! \n";
+        return false;
     }
 
-void fits_parser::update_file
-(std::fstream &file, std::string &keyarg, std::string &valarg)
+    // * manipulate valarg to conform to standards
+    if (valarg.front() == '\'')
     {
-        file.clear();
-        file.seekp(0, std::ios::beg);
+        charStr = true;
+        if(valarg.back() != '\'')
+        {
+            invalidFormat = true;
+            std::cerr << "UNCLOSED single quote ?? \n";
+            // (then append single quote to back later anyway)
+        }
+    }
+    
+    // * value string size cannot be greater than 70 
+    // * (including quotes ' ' in case of char strings)
+    if(valarg.size() > 70)
+    {
+        std::cerr << "VALARG TOO LONG!\n";
+        // TODO: handle continued-string keywords
+    }
+    else if (valarg.size() < 70)
+    {
+        // * append required no of spaces
+        if (charStr)
+        {
+            valarg.append(69-valarg.size(), ' ');
 
-        bool found = false, charStr = false, invalidFormat = false;;
-   
-        // * manipulate valarg to conform to standards
-        if (valarg.front() == '\'')
-        {
-            charStr = true;
-            if(valarg.back() != '\'')
-            {
-                invalidFormat = true;
-                std::cerr << "UNCLOSED single quote ?? \n";
-                // (then append single quote to back later anyway)
-            }
+            if(invalidFormat)
+                valarg.append("\'");
+            // closing quote appended if not provided
         }
-        
-        // * value string size cannot be greater than 70 
-        // * (including quotes ' ' in case of char strings)
-        if(valarg.size() > 70)
+        else
         {
-            std::cerr << "VALARG TOO LONG!\n";
-            // TODO: handle continued-string keywords
+            valarg.append(70-valarg.size(), ' ');
         }
-        else if (valarg.size() < 70)
+    }
+    
+    char temp[81];        
+    if(!file.eof())
+        file.read(temp, 80);
+    std::string s(temp);
+    
+    size_t hducount = 0; 
+    bool extFound = false;
+    int load = 0;
+    while(!file.eof() && hducount < hdu_no)
+    {
+        switch (load)
         {
-            // * append required no of spaces
-            if (charStr)
-            {
-                valarg.append(69-valarg.size(), ' ');
+        case 0:
+            std::cout << "Searching..";
+            load = 2;
+            break;
+        case 1:
+            std::cout << "..";
+            load = 2;    
+            break;
+        case 2:
+            std::cout << "..";
+            load = 3;
+            break;
+        case 3: 
+            std::cout << "..\b\b\b\b\b\b";
+            load = 1;
+            break;
+        default:
+            break;
+        }
+        extFound = false;
+        if(s.substr(0,8)=="XTENSION")
+        {
+            hducount++;
+            extFound = true;
+        }
+        file.read(temp, 80);
+        s = std::string(temp);
+    }
 
-                if(invalidFormat)
-                    valarg.append("\'");
-                // closing quote appended if not provided
-            }
-            else
-            {
-                valarg.append(70-valarg.size(), ' ');
-            }
+    // if extFound is true, means the previous scanned card had the XTENSION keyword
+    while(!file.eof())
+    {
+        switch (load)
+        {
+        case 0:
+            std::cout << "Searching..";
+            load = 2;
+            break;
+        case 1:
+            std::cout << "..";
+            load = 2;    
+            break;
+        case 2:
+            std::cout << "..";
+            load = 3;
+            break;
+        case 3: 
+            std::cout << "..\b\b\b\b\b\b";
+            load = 1;
+            break;
+        default:
+            break;
         }
-        
-        char temp[81];        
-        if(!file.eof())
-            file.read(temp, 80);
-        std::string s(temp);
-        
-        while(!file.eof())
+        if(s.substr(0,3) != "END")
         {
             if(s.substr(0, keyarg.size()) == keyarg)
             {
-                std::cout << "FOUND! Trying to update...\n";
+                std::cout << "FOUND in header no. " << hducount << "! Trying to update...\n";
                 ull pos = file.tellp();
                 file.seekp(pos - 70);
                 file << valarg;
                 file.seekp(pos);  // reset cursor to old position
                 found = true;
+                retval = true;
                 break;
             }
-
-            file.read(temp, 80);
-            s = std::string(temp);
         }
-
-        if(!found)
-            std::cerr << "KEYWORD NOT FOUND!\n";
-
-        extract_cards(file);
-        populate_map();
+        else
+        {
+            break;
+        }
+        
+        file.read(temp, 80);
+        s = std::string(temp);
     }
+
+    if(!found)
+    {
+        std::cerr << "KEYWORD NOT FOUND!\n";
+        retval = false;
+    }
+
+    extract_cards(file);
+    populate_map();
+    return retval;
+}

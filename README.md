@@ -22,10 +22,11 @@ Once CMake is installed:
 6. **Important**: The FITS files that you want to parse have to be stored in the /fits_files subdirectory of the root. This is the directory the program searches for the FITS files in.  
 
 ## Current features:  
-Can parse all HDUs (primary HDU and standard extensions)
+Can parse all HDUs (primary HDU and standard e**XTENSION**s **- IMAGE**, **BINTABLE** and **TABLE**)
 
 * **DISPLAY** - displays all keywords (HDU wise) with associated values and / comments present in the file.  
-* **UPDATE [KEYWORD] [VALUE]** - update existing value of provided keyword with provided value.  
+    * **DISPLAY [HDU NUMBER]** - displays all records from specified HDU number (0 for primary HDU, 1 for first extension and so on)  
+* **UPDATE [HDU NUMBER] [KEYWORD] [VALUE]** - update existing value of provided keyword with provided value.  
     * if **[VALUE]** is of invalid format/size, handles it accordingly.  
     (eg. if value is a character string, checks for single quotes at front and back, adds closing quote if not present.)  
 * **[KEYWORD]** - displays value of provided keyword (HDU wise, shows all results if keyword present in more than one HDU)
@@ -34,7 +35,7 @@ Can parse all HDUs (primary HDU and standard extensions)
 
 ## Limitations:  
 
-* Unable to handle continued-string keywords.
+* Unable to handle long-string keywords (**CONTINUE**).
 * ~~Currently unable to handle **HISTORY** keywords, and can perform **no** actions on them.~~
 * ~~Unable to handle extensions, can only extract primary header.~~
 

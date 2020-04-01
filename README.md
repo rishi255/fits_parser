@@ -1,6 +1,6 @@
 # fits_parser
 
-A parser with an **interactive menu** that can **extract details from a FITS file**, and lets the user:  
+A parser with an **interactive menu** that can **extract details from a [FITS (Flexible Image Transport System)](https://en.wikipedia.org/wiki/FITS) file**, and lets the user:  
 * query keywords to get their values, and  
 * update values of keywords in file.
 

@@ -38,9 +38,3 @@ Can parse all HDUs (primary HDU and standard e**XTENSION**s **- IMAGE**, **BINTA
 * Unable to handle long-string keywords (**CONTINUE**).
 * ~~Currently unable to handle **HISTORY** keywords, and can perform **no** actions on them.~~
 * ~~Unable to handle extensions, can only extract primary header.~~
-
-## Coming up...
-
-* Command line functionality!  
-Will be able to handle all commands described above as **command line arguments**, where the first argument will have to be the file name.  
-eg. `./FITS_Parser  ../sample_file.fits  DISPLAY`
